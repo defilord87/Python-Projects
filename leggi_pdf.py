@@ -47,8 +47,8 @@ class Coa:
             cls.dict_recap['Delivery'].append(i.delivery)
             cls.dict_recap['Batch'].append(i.batch)
             cls.dict_recap['Filtro'].append(i.filtro)
-            cls.df_recap = pd.DataFrame.from_dict(cls.dict_recap)
-            return cls.df_recap
+        cls.df_recap = pd.DataFrame.from_dict(cls.dict_recap)
+        return cls.df_recap
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
     def __init__(self, delivery:str):
@@ -97,9 +97,6 @@ class Coa:
         self.batch = coa_pdf[0].get_textbox(rettangolo_batch).strip()
         self.batchcorto = self.batch.split('  / ')[0]
         self.batch_compresso = self.batch.replace('  / ', '')[6:]
-        # aggiungo il batch alla lista per il recappone
-        Coa.recap_istanze['Delivery'].append(self.delivery)
-        Coa.recap_istanze['Batch'].append(self.batch)
         # cerco i valori delle analisi
         for analisi in self.istanza_prodotto.lista_analisi:
             pagina = 0
