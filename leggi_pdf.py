@@ -36,8 +36,13 @@ class FiltroNotOk(Exception):
 
 class Coa:
 
+    """ Inizializzo una lista recappone per collezionare le istanze create.
+        Mi serve per poter capire quali delivery fanno parte di un blenderone e di quante ATB è composto. """
+    recappone = []
+
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
     def __init__(self, delivery:str):
+        Coa.recappone.append(self) # aggiungo l'istanza alla lista recappone
         self.delivery = delivery
         result = [] # Inizializza la lista vuota dei risultati della ricerca
         for trova in os.scandir(PERCORSO_COA):
