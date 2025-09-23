@@ -18,9 +18,6 @@ for i in range(numero_scarichi):
     filtro = tank[2]
     istanza = lp.creazione(delivery, data, filtro)
     istanza.processa()
-    if istanza.batch in conta_batch.keys():
-        conta_batch[istanza.batch] += 1
-    else:
-        conta_batch[istanza.batch] = 1
-        istanze.append(istanza)
+    recappone = lp.Coa.recappone()
+    print(recappone)
 breakpoint()
