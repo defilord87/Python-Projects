@@ -14,6 +14,7 @@ from pathlib import Path        # per prendere il nome del file trovato dal perc
 import pymupdf                  # per leggere il certificato pdf ed estrarre i dati
 import pandas as pd             # per gestire i dati estratti dal pdf ed esportarli nel file Excel del foglio di marcia
 from datetime import datetime   # per gestire le date
+import sys                      # per chiudere lo script se non indico nessuna delivery in input
 
 # DEFINIZIONE VARIABILI GLOBALI
 PERCORSO_COA = r"\\vm-cegeka\COA"
@@ -24,13 +25,13 @@ DICT_ANALISI = {'ANALISI': [], 'VALORE': []}    # inizializzo il dizionario che 
 #CREAZIONE CLASSI
 class CoaNotOk(Exception):
 
-    """ Creo un'eccezione custom nel caso la delivery inserita non esista oppure non sia univoca """
+    """ Creo un'eccezione custom nel caso la delivery non esista oppure non sia univoca """
     pass
 
 
 class FiltroNotOk(Exception):
 
-    """ Creo un'eccezione custom nel caso il filtro inserito non sia 1, 2 o 3 """
+    """ Creo un'eccezione custom nel caso il filtro non sia 1, 2 o 3 """
     pass
 
 
@@ -177,3 +178,42 @@ def creazione(delivery:str, data:datetime, filtro:int):
     certificato.data = data
     certificato.filtro = filtro
     return certificato
+
+# DEFINISCO LA FUNZIONE DI INPUT, DA CHIAMARE QUANDO QUESTO SCRIPT VIENE ESEGUITO DIRETTAMENTE
+def inserisci():
+    tasks = []
+    while True:
+        chiedi_filtro = True
+        chiedi_data = True
+        delivery = input("Inserisci una delivery o scrivi OK per confermare: ").lower()
+        if delivery == 'ok':
+            return tasks
+        else:
+            while chiedi_filtro:
+                filtro = int(input(f"Inserisci il filtro per la delivery {delivery} (1, 2, 3): "))
+                if filtro == 1 or filtro == 2 or filtro == 3:
+                    while chiedi_data:
+                        data_in = input(f"Inserisci la data per la delivery {delivery} nel formato gg/mm/aa: ")
+                        try:
+                            data = datetime.strptime(data_in, '%d/%m/%y')
+                            tasks.append({'delivery': delivery, 'filtro': filtro, 'data': data})
+                            chiedi_filtro = False
+                            chiedi_data = False
+                        except ValueError:
+                            print("Devi inserire una data nel formato gg/mm/aa")
+                else:
+                    print("Devi inserire 1, 2 o 3 come valore per il filtro")
+
+
+""" Se eseguo questo script direttamente chiedo manualmente le delivery.
+    Se viene importato come modulo le prendo in automatico dal programma carichi scarichi."""
+if __name__ == "__main__":
+    tasks = inserisci()
+    print(tasks)
+    for t in tasks:
+        istanza = creazione(tasks[t]['delivery'], tasks[t]['data'], tasks[t]['filtro'])
+        istanza.processa()
+    recappone = Coa.recappone()
+    lista_istanze = Coa.lista_istanze
+    for i in lista_istanze:
+        i.crea_fdm()
