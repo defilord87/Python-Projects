@@ -8,7 +8,7 @@ s.barondi@iglom.it
 
 # IMPORTAZIONE MODULI
 import anagrafica as an         # importo l'anagrafica (vedi docstring in alto)
-import os                     # per cercare i file
+import os                       # per cercare i file
 import shutil                   # per copiare-incollare-rinominare i file
 from pathlib import Path        # per prendere il nome del file trovato dal percorso completo
 import pymupdf                  # per leggere il certificato pdf ed estrarre i dati
@@ -36,18 +36,22 @@ class FiltroNotOk(Exception):
 
 class Coa:
 
-    """ Inizializzo una lista recappone per collezionare le istanze create.
+    """ Inizializzo una lista e un dizionario per il recappone per collezionare le istanze create.
         Mi serve per poter capire quali delivery fanno parte di un blenderone e di quante ATB è composto. """
     lista_istanze = []
+    dict_recap = {'Delivery': [], 'Batch': [], 'Filtro': []}
 
     @classmethod
     def recappone(cls):
-        cls.dict_recap = {'Delivery': [], 'Batch': [], 'Filtro': []}
-        for i in cls.lista_istanze:
-            cls.dict_recap['Delivery'].append(i.delivery)
-            cls.dict_recap['Batch'].append(i.batch)
-            cls.dict_recap['Filtro'].append(i.filtro)
         cls.df_recap = pd.DataFrame.from_dict(cls.dict_recap)
+        cls.df_recap['num_batch'] = cls.df_recap.groupby('Batch').cumcount()
+        cls.df_recap['Batch'] = cls.df_recap.apply(
+            lambda row: f"{row['Batch']}-{row['num_batch']}" if row['num_batch'] > 0 else row['Batch'],
+            axis=1
+        )
+        cls.df_recap = cls.df_recap.drop(columns='num_batch')
+        for i in cls.lista_istanze:
+            i.batch = cls.df_recap['Batch'][cls.lista_istanze.index(i)]
         return cls.df_recap
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
@@ -65,7 +69,8 @@ class Coa:
         self.file = result[0]
         self.nomefile = Path(self.file).name
         self.prodotto = self.nomefile[16:22]
-        # inizializzo alcune variabili che verranno poi definite nella funzione di creazione: creazione()
+        self.filtrato = self.prodotto.replace('C', 'F')
+        # inizializzo alcune variabili che verranno poi definite nella funzione di creazione creazione()
         self.data = ''
         self.filtro = ''
 
@@ -89,14 +94,12 @@ class Coa:
             ** NB: IL DIZIONARIO è FORMATTATO IN QUESTO MODO PER ESSERE GIà PRONTO DA ESPORTARE COME DATAFRAME: LE CHIAVI SARANNO GLI INDICI DELLE COLONNE E GLI ELEMENTI DELLE LISTE SARANNO LE RIGHE **
         3) crea e restituisce un DataFrame di pandas a partire dal dizionario ottenuto
         """
-    def processa(self): # RICORDA DI FAR PRELEVARE ANCHE IL BATCH
+    def processa(self):
         coa_pdf = pymupdf.open(self.file)
         risultati = coa_pdf[0].search_for('Batch No.')
         cerca_batch = risultati[0]
         rettangolo_batch = pymupdf.Rect(x0=cerca_batch.x0+11.65, y0=cerca_batch.y0+10.45, x1=cerca_batch.x1+90, y1=cerca_batch.y1+12.45)
         self.batch = coa_pdf[0].get_textbox(rettangolo_batch).strip()
-        self.batchcorto = self.batch.split('  / ')[0]
-        self.batch_compresso = self.batch.replace('  / ', '')[6:]
         # cerco i valori delle analisi
         for analisi in self.istanza_prodotto.lista_analisi:
             pagina = 0
@@ -125,6 +128,10 @@ class Coa:
             DICT_ANALISI['ANALISI'].append(analisi)
             DICT_ANALISI['VALORE'].append(valore)
         self.df_analisi = pd.DataFrame(DICT_ANALISI)
+        # popolo il dizionario recappone con i valori dell'istanza
+        Coa.dict_recap['Delivery'].append(self.delivery)
+        Coa.dict_recap['Batch'].append(self.batch)
+        Coa.dict_recap['Filtro'].append(self.filtro)
         return self.df_analisi
     
     """ La seguente funzione lavora sul foglio di marcia con i seguenti passaggi:
@@ -134,10 +141,12 @@ class Coa:
         4) lo replica più volte nel caso si tratti di un blenderone """
     def crea_fdm(self):
         percorso_fdm = PERCORSO_MAIN + r"\Fogli di marcia"
-        self.filtrato = self.prodotto.replace('C', 'F')
         for trova in os.scandir(fr"{percorso_fdm}\Vergini 2023"):
             if trova.is_file() and self.filtrato in trova.name and trova.name.endswith('.xlsx'):
                 result = trova.path
+        # Creo le altre versioni del batch (batchcorto: senza tank, batch_compresso: intero senza interpunzioni)
+        self.batchcorto = self.batch.split('  / ')[0]
+        self.batch_compresso = self.batch.replace('  / ', '')[6:]
         fdm_finale = fr"{percorso_fdm}\{self.filtrato} 1-{self.batch_compresso}.xlsx"
         shutil.copy(result, fdm_finale) # devo ancora definire il batch
         self.df_analisi.loc[len(self.df_analisi)] = ['AUTO', 'AUTO'] # per far capire che il CoA è stato generato in automatico
