@@ -8,7 +8,7 @@ s.barondi@iglom.it
 
 # IMPORTAZIONE MODULI
 import anagrafica as an         # importo l'anagrafica (vedi docstring in alto)
-import os                       # per cercare i file
+import os                       # per cercare i file e per prendere il nome utente di Windows
 import shutil                   # per copiare-incollare-rinominare i file
 from pathlib import Path        # per prendere il nome del file trovato dal percorso completo
 import pymupdf                  # per leggere il certificato pdf ed estrarre i dati
@@ -18,7 +18,7 @@ import sys                      # per chiudere lo script se non indico nessuna d
 
 # DEFINIZIONE VARIABILI GLOBALI
 PERCORSO_COA = r"\\vm-cegeka\COA"
-PERCORSO_MAIN = r"C:\Users\s.barondi\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+PERCORSO_MAIN = rf"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
 # PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 DICT_ANALISI = {'ANALISI': [], 'VALORE': []}    # inizializzo il dizionario che poi andrò a riempire con analisi e relativi valori
 
@@ -210,7 +210,7 @@ def inserisci():
 if __name__ == "__main__":
     tasks = inserisci()
     print(tasks)
-    for t in tasks:
+    for t in range(0, len(tasks)):
         istanza = creazione(tasks[t]['delivery'], tasks[t]['data'], tasks[t]['filtro'])
         istanza.processa()
     recappone = Coa.recappone()
