@@ -18,8 +18,8 @@ import sys                      # per chiudere lo script se non indico nessuna d
 
 # DEFINIZIONE VARIABILI GLOBALI
 PERCORSO_COA = r"\\vm-cegeka\COA"
-PERCORSO_MAIN = rf"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
-# PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
+# PERCORSO_MAIN = rf"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 DICT_ANALISI = {'ANALISI': [], 'VALORE': []}    # inizializzo il dizionario che poi andrò a riempire con analisi e relativi valori
 
 #CREAZIONE CLASSI
@@ -42,6 +42,7 @@ class Coa:
     lista_istanze = []
     dict_recap = {'Delivery': [], 'Batch': [], 'Filtro': []}
 
+    """ Creo la funzione per popolare il dizionario recappone con i dati delle istanze create. """
     @classmethod
     def recappone(cls):
         cls.df_recap = pd.DataFrame.from_dict(cls.dict_recap)
@@ -54,6 +55,16 @@ class Coa:
         for i in cls.lista_istanze:
             i.batch = cls.df_recap['Batch'][cls.lista_istanze.index(i)]
         return cls.df_recap
+
+    """ Creo la funzione per popolare il bollettone delle analisi M30B con i dati dell'istanza.
+        In base al numero di elementi del blenderone replica con i vari batch."""
+    """ GUARDA SE INCLUDERLA NELLA FUNZIONE recappone() PER EVITARE DI ITERARE DUE VOLTE SU LISTA_ISTANZE """
+    @classmethod
+    def popola_m30b(cls):
+        bollettone = r"D:\Scaricati\M30B Bollettino d'analisi interno 2025.xlsx"
+        df_bollettone = pd.read_excel(bollettone, usecols=(1,2,3,4,5,6), skiprows=(range(0,22)))
+        indice_finedati = df_bollettone['Prodotto '].isna().idxmax()
+        df_bollettone = df_bollettone.iloc[:indice_finedati]
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
     def __init__(self, delivery:str):
