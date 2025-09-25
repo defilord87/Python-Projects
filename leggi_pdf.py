@@ -14,13 +14,14 @@ from pathlib import Path        # per prendere il nome del file trovato dal perc
 import pymupdf                  # per leggere il certificato pdf ed estrarre i dati
 import pandas as pd             # per gestire i dati estratti dal pdf ed esportarli nel file Excel del foglio di marcia
 from datetime import datetime   # per gestire le date
-import sys                      # per chiudere lo script se non indico nessuna delivery in input
+import locale                   # per convertire la data in formato 01-gen per esportare nel bollettone M30B
 
-# DEFINIZIONE VARIABILI GLOBALI
-PERCORSO_COA = r"\\vm-cegeka\COA"
-# PERCORSO_MAIN = rf"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
-PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
-DICT_ANALISI = {'ANALISI': [], 'VALORE': []}    # inizializzo il dizionario che poi andrò a riempire con analisi e relativi valori
+# DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
+PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+# PERCORSO_COA = r"\\vm-cegeka\COA"
+PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+# PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
+locale.setlocale(locale.LC_TIME, "it_IT.UTF-8")
 
 #CREAZIONE CLASSI
 class CoaNotOk(Exception):
@@ -40,31 +41,45 @@ class Coa:
     """ Inizializzo una lista e un dizionario per il recappone per collezionare le istanze create.
         Mi serve per poter capire quali delivery fanno parte di un blenderone e di quante ATB è composto. """
     lista_istanze = []
-    dict_recap = {'Delivery': [], 'Batch': [], 'Filtro': []}
+    dict_recap = {'Delivery': [], 'Batch': [], 'Batchcorto': [], 'Filtro': []}
 
-    """ Creo la funzione per popolare il dizionario recappone con i dati delle istanze create. """
+    """ Creo la funzione recappone con i seguenti scopi:
+        1) Replicare il batch per le varie ATB dello stesso blenderone
+        2) Popolare il dizionario recappone con i dati delle istanze create
+        3) Popolare il bollettone delle analisi M30B con i dati dell'istanza """
     @classmethod
     def recappone(cls):
+        # Metto i trattini ai batch del blenderone
+        # --- N.B è fatto IN MODO SEQUENZIALE a seconda dell'ordine in cui le delivery compaiono nel programma ---
         cls.df_recap = pd.DataFrame.from_dict(cls.dict_recap)
         cls.df_recap['num_batch'] = cls.df_recap.groupby('Batch').cumcount()
         cls.df_recap['Batch'] = cls.df_recap.apply(
             lambda row: f"{row['Batch']}-{row['num_batch']}" if row['num_batch'] > 0 else row['Batch'],
             axis=1
         )
+        cls.df_recap['Batchcorto'] = cls.df_recap.apply(
+            lambda row: f"{row['Batchcorto']}-{row['num_batch']}" if row['num_batch'] > 0 else row['Batchcorto'],
+            axis=1
+        )
         cls.df_recap = cls.df_recap.drop(columns='num_batch')
+        aggiunta_bollettone = {'Prodotto ': [], 'Data': [], 'Batch': [], 'Filtro': []}
+        bollettone = fr"{PERCORSO_MAIN}\M30B Bollettino d'analisi interno {datetime.now().year}.xlsx"
+        cls.df_bollettone = pd.read_excel(bollettone, usecols=(1,2,3,4,5,6), skiprows=(range(0,22)))
+        indice_finedati = cls.df_bollettone['Prodotto '].isna().idxmax()
         for i in cls.lista_istanze:
             i.batch = cls.df_recap['Batch'][cls.lista_istanze.index(i)]
+            i.batchcorto = cls.df_recap['Batchcorto'][cls.lista_istanze.index(i)]
+            i.batch_compresso = i.batch.replace('  / ', '')[6:]
+            for j in range(0, 9):
+                aggiunta_bollettone['Prodotto '].append(i.filtrato)
+                aggiunta_bollettone['Data'].append(datetime.strftime(i.data, '%d-%b'))
+                aggiunta_bollettone['Batch'].append(i.batchcorto)
+                aggiunta_bollettone['Filtro'].append(f"TK{i.filtro}2")
+        cls.df_aggiunta = pd.DataFrame(aggiunta_bollettone)
+        with pd.ExcelWriter(bollettone,mode='a',if_sheet_exists='overlay',engine='openpyxl') as writer:
+            cls.df_aggiunta.iloc[:, 0:3].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=1,header=False,index=False)
+            cls.df_aggiunta.loc[:, 'Filtro'].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=6,header=False,index=False)
         return cls.df_recap
-
-    """ Creo la funzione per popolare il bollettone delle analisi M30B con i dati dell'istanza.
-        In base al numero di elementi del blenderone replica con i vari batch."""
-    """ GUARDA SE INCLUDERLA NELLA FUNZIONE recappone() PER EVITARE DI ITERARE DUE VOLTE SU LISTA_ISTANZE """
-    @classmethod
-    def popola_m30b(cls):
-        bollettone = r"D:\Scaricati\M30B Bollettino d'analisi interno 2025.xlsx"
-        df_bollettone = pd.read_excel(bollettone, usecols=(1,2,3,4,5,6), skiprows=(range(0,22)))
-        indice_finedati = df_bollettone['Prodotto '].isna().idxmax()
-        df_bollettone = df_bollettone.iloc[:indice_finedati]
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
     def __init__(self, delivery:str):
@@ -112,6 +127,11 @@ class Coa:
         cerca_batch = risultati[0]
         rettangolo_batch = pymupdf.Rect(x0=cerca_batch.x0+11.65, y0=cerca_batch.y0+10.45, x1=cerca_batch.x1+90, y1=cerca_batch.y1+12.45)
         self.batch = coa_pdf[0].get_textbox(rettangolo_batch).strip()
+        # Creo le altre versioni del batch (batchcorto: senza tank, batch_compresso: intero senza interpunzioni)
+        self.batchcorto = self.batch.split('  / ')[0]
+        self.batch_compresso = self.batch.replace('  / ', '')[6:]
+        # inizializzo il dizionario che poi andrò a riempire con analisi e relativi valori
+        self.dict_analisi = {'ANALISI': [], 'VALORE': []}
         # cerco i valori delle analisi
         for analisi in self.istanza_prodotto.lista_analisi:
             pagina = 0
@@ -137,12 +157,13 @@ class Coa:
             except AttributeError:
                 pass
             # Popolo il dizionario delle analisi che sarà poi esportato come DataFrame:
-            DICT_ANALISI['ANALISI'].append(analisi)
-            DICT_ANALISI['VALORE'].append(valore)
-        self.df_analisi = pd.DataFrame(DICT_ANALISI)
+            self.dict_analisi['ANALISI'].append(analisi)
+            self.dict_analisi['VALORE'].append(valore)
+        self.df_analisi = pd.DataFrame(self.dict_analisi)
         # popolo il dizionario recappone con i valori dell'istanza
         Coa.dict_recap['Delivery'].append(self.delivery)
         Coa.dict_recap['Batch'].append(self.batch)
+        Coa.dict_recap['Batchcorto'].append(self.batchcorto)
         Coa.dict_recap['Filtro'].append(self.filtro)
         return self.df_analisi
     
@@ -156,9 +177,6 @@ class Coa:
         for trova in os.scandir(fr"{percorso_fdm}\Vergini 2023"):
             if trova.is_file() and self.filtrato in trova.name and trova.name.endswith('.xlsx'):
                 result = trova.path
-        # Creo le altre versioni del batch (batchcorto: senza tank, batch_compresso: intero senza interpunzioni)
-        self.batchcorto = self.batch.split('  / ')[0]
-        self.batch_compresso = self.batch.replace('  / ', '')[6:]
         fdm_finale = fr"{percorso_fdm}\{self.filtrato} 1-{self.batch_compresso}.xlsx"
         shutil.copy(result, fdm_finale) # devo ancora definire il batch
         self.df_analisi.loc[len(self.df_analisi)] = ['AUTO', 'AUTO'] # per far capire che il CoA è stato generato in automatico
