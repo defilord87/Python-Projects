@@ -20,4 +20,3 @@ recappone = lp.Coa.recappone()
 lista_istanze = lp.Coa.lista_istanze
 for i in lista_istanze:
     i.crea_fdm()
-breakpoint()

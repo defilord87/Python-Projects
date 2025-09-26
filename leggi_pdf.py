@@ -15,6 +15,7 @@ import pymupdf                  # per leggere il certificato pdf ed estrarre i d
 import pandas as pd             # per gestire i dati estratti dal pdf ed esportarli nel file Excel del foglio di marcia
 from datetime import datetime   # per gestire le date
 import locale                   # per convertire la data in formato 01-gen per esportare nel bollettone M30B
+import hashlib                  # per vedere se nel bollettone sono già stati inseriti i prodotti (programma C/S già esportato)
 
 # DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
 PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
@@ -76,9 +77,16 @@ class Coa:
                 aggiunta_bollettone['Batch'].append(i.batchcorto)
                 aggiunta_bollettone['Filtro'].append(f"TK{i.filtro}2")
         cls.df_aggiunta = pd.DataFrame(aggiunta_bollettone)
-        with pd.ExcelWriter(bollettone,mode='a',if_sheet_exists='overlay',engine='openpyxl') as writer:
-            cls.df_aggiunta.iloc[:, 0:3].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=1,header=False,index=False)
-            cls.df_aggiunta.loc[:, 'Filtro'].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=6,header=False,index=False)
+        percorso_log = fr"{PERCORSO_MAIN}\Automatizzazione fogli di marcia\log_bollettone.csv"
+        hash_aggiunta = hashlib.md5(cls.df_aggiunta.to_csv(index=False).encode("utf-8")).hexdigest()
+        df_log = pd.read_csv(percorso_log, dtype=str, sep=";")
+        if hash_aggiunta not in df_log['batch_id'].values:
+            with pd.ExcelWriter(bollettone,mode='a',if_sheet_exists='overlay',engine='openpyxl') as writer:
+                cls.df_aggiunta.iloc[:, 0:3].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=1,header=False,index=False)
+                cls.df_aggiunta.loc[:, 'Filtro'].to_excel(writer,sheet_name="ANALISI",startrow=indice_finedati+23,startcol=6,header=False,index=False)
+            nuova_riga_log = pd.DataFrame([{'batch_id': hash_aggiunta, 'descrizione': f'Automatizzato in data {datetime.now()}'}])
+            df_log = pd.concat([df_log, nuova_riga_log], ignore_index=True)
+            df_log.to_csv(percorso_log, index=False, sep=";")
         return cls.df_recap
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
