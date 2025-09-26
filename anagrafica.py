@@ -27,6 +27,7 @@ ANALISI = [
     'Sulfur', # 16
     'Zinc', # 17
     'Water', # 18
+    'Specific Gravity', # 19
 ]
 
 class Prodotto:
@@ -62,5 +63,5 @@ prodotti = [
     Prodotto('P6571C', 'salicilato', blendable=False, riga=72, analisi=(0, 6, 7, 3, 2, 13, 16, 17, 12, 4, 1, 5, 9)),
     Prodotto('P6052C', 'salicilato', blendable=False, riga=71, analisi=(0, 6, 7, 3, 10, 13, 17, 12, 1, 16, 2, 14, 9)),
     Prodotto('P6660C', 'salicilato', blendable=False, riga=73, analisi=(0, 6, 7, 3, 13, 17, 12, 10, 16, 14, 1, 9)),
-    Prodotto('P5245C', 'solfonato', blendable=False, riga=69, analisi=(0, 6, 7, 3, 2, 13, 11, 17, 12, 9)),
+    Prodotto('P5245C', 'solfonato', blendable=False, riga=69, analisi=(0, 19, 7, 3, 2, 13, 11, 17, 12, 9)),
 ]
