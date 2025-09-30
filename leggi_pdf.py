@@ -14,15 +14,13 @@ from pathlib import Path        # per prendere il nome del file trovato dal perc
 import pymupdf                  # per leggere il certificato pdf ed estrarre i dati
 import pandas as pd             # per gestire i dati estratti dal pdf ed esportarli nel file Excel del foglio di marcia
 from datetime import datetime   # per gestire le date
-import locale                   # per convertire la data in formato 01-gen per esportare nel bollettone M30B
 import hashlib                  # per vedere se nel bollettone sono già stati inseriti i prodotti (programma C/S già esportato)
 
 # DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
-PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
-# PERCORSO_COA = r"\\vm-cegeka\COA"
-PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
-# PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
-locale.setlocale(locale.LC_TIME, "it_IT.UTF-8")
+# PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+PERCORSO_COA = r"\\vm-cegeka\COA"
+# PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 
 #CREAZIONE CLASSI
 class CoaNotOk(Exception):
@@ -116,10 +114,7 @@ class Coa:
         for p in an.prodotti:
             if self.prodotto == p.nome:
                 self.istanza_prodotto = p
-                self.blendable = p.blendable # per capire se può essere un blenderone oppure no in base al prodotto
                 self.riga = p.riga
-                self.blend = False # lo imposto False per default, poi da input chiederò se è effettivamente un blenderone oppure no
-                self.contabatch = 1 # valore di default, serve per contare quanti scarichi fanno parte di un blenderone
         if self.istanza_prodotto == '':
             raise CoaNotOk(f"Il prodotto {self.prodotto} non è presente in anagrafica!")
 
@@ -201,7 +196,6 @@ class Coa:
             f"Delivery: {self.delivery}\n"
             f"Nome prodotto: {self.prodotto}\n"
             f"Nome del file: {self.nomefile}\n"
-            f"Blenderone: {self.blend}\n"
         )
     
     def __repr__(self):
@@ -209,7 +203,7 @@ class Coa:
 
 # DEFINISCO LA FUNZIONE DI CREAZIONE DELL'ISTANZA DI CLASSE, DA CHIAMARE IMPORTANDO QUESTO SCRIPT COME MODULO
 def creazione(delivery:str, data:datetime, filtro:int):
-    # Creo l'istanza di classe e faccio i controlli sul prodotto (che sia nell'anagrafica e che possa avere un blenderone)
+    # Creo l'istanza di classe e faccio i controlli sul prodotto (che sia presente nell'anagrafica)
     certificato = Coa(delivery)
     certificato.check_prodotto()
     certificato.data = data
