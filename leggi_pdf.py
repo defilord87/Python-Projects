@@ -17,9 +17,9 @@ from datetime import datetime   # per gestire le date
 import hashlib                  # per vedere se nel bollettone sono già stati inseriti i prodotti (programma C/S già esportato)
 
 # DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
-# PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+# PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- PER QUANDO TESTO DA CASA
 PERCORSO_COA = r"\\vm-cegeka\COA"
-# PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- STO TESTANDO, PER ORA LAVORO IN LOCALE
+# PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- PER TESTARE IN LOCALE, ANCHE A LAVORO
 PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 
 #CREAZIONE CLASSI

@@ -28,6 +28,7 @@ ANALISI = [
     'Zinc', # 17
     'Water', # 18
     'Specific Gravity', # 19
+    'Sediment', # 20
 ]
 
 class Prodotto:
@@ -63,4 +64,5 @@ prodotti = [
     Prodotto('P6052C', 'salicilato', riga=71, analisi=(0, 6, 7, 3, 10, 13, 17, 12, 1, 16, 2, 14, 9)),
     Prodotto('P6660C', 'salicilato', riga=73, analisi=(0, 6, 7, 3, 13, 17, 12, 10, 16, 14, 1, 9)),
     Prodotto('P5245C', 'solfonato', riga=69, analisi=(0, 19, 7, 3, 2, 13, 11, 17, 12, 9)),
+    Prodotto('D3502C', 'solfonato', riga=72, analisi=(0, 6, 7, 3, 16, 13, 10, 11, 17, 12, 1, 14, 20, 9)),
 ]
