@@ -6,7 +6,6 @@ file = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB\CREAZIONE CARICHI SCARICH
 leggi = pd.read_excel(file, usecols=(1, 5), skiprows=(0,1), sheet_name='PROGRAMMA UNICO')
 indice = leggi.loc[leggi['Delivery'] == 'Cliente'].index[0]
 data = leggi.iloc[indice-2, 0]
-breakpoint()
 scarichi = leggi.iloc[:indice-3, :].reset_index(drop=True)
 dict_scarichi = scarichi.to_dict()
 numero_scarichi = len(dict_scarichi['Delivery'])
