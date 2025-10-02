@@ -1,7 +1,8 @@
 import pandas as pd
+import interfaccia # importo le funzioni per l'interfaccia grafica (da togliere un giorno?)
 import leggi_pdf as lp # importo la funzione per processare i CoA e fare tutto il giro
 
-file = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB\CREAZIONE CARICHI SCARICHI\2025\10_OTTOBRE_25\CREAZIONE CARICHI SCARICHI - 01.10.25.xlsx"
+file = interfaccia.finestra()
 
 leggi = pd.read_excel(file, usecols=(1, 5), skiprows=(0,1), sheet_name='PROGRAMMA UNICO')
 indice = leggi.loc[leggi['Delivery'] == 'Cliente'].index[0]
