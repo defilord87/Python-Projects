@@ -35,6 +35,7 @@ class FiltroNotOk(Exception):
     pass
 
 
+""" Creo la classe Coa sulle cui istanze faccio tutto il processo (cerca pdf, importa analisi, esporta su Excel ecc.)"""
 class Coa:
 
     """ Inizializzo una lista e un dizionario per il recappone per collezionare le istanze create.
@@ -88,9 +89,11 @@ class Coa:
         return cls.df_recap
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
-    def __init__(self, delivery:str):
+    def __init__(self, delivery:str, data:datetime, filtro:int):
         Coa.lista_istanze.append(self) # aggiungo l'istanza alla lista per il recappone
         self.delivery = delivery
+        self.data = data
+        self.filtro = filtro
         result = [] # Inizializza la lista vuota dei risultati della ricerca
         for trova in os.scandir(PERCORSO_COA):
             if trova.is_file() and self.delivery in trova.name and trova.name.endswith('.pdf'):
@@ -107,17 +110,6 @@ class Coa:
         self.data = ''
         self.filtro = ''
 
-    """ La seguente funzione cerca il prodotto nel modulo anagrafica.py; se non lo trova (ovvero se self.istanza_prodotto rimane una stringa vuota) genera un errore.
-        Questo check è fondamentale perché nella cartella dei CoA in vm-cegeka ci sono anche i prodotti per infustamento e si potrebbe selezionare uno di quelli per errore. """
-    def check_prodotto(self):
-        self.istanza_prodotto = '' # inizializzo la variabile
-        for p in an.prodotti:
-            if self.prodotto == p.nome:
-                self.istanza_prodotto = p
-                self.riga = p.riga
-        if self.istanza_prodotto == '':
-            raise CoaNotOk(f"Il prodotto {self.prodotto} non è presente in anagrafica!")
-
     """ La seguente funzione processa il certificato pdf con i seguenti passaggi:
         1) apre il certificato pdf trovato e trova le analisi previste per quel prodotto con i rispettivi valori
         2) estrapola nomi analisi e rispettivi valori in un dizionario di liste, una per le analisi e una per i valori
@@ -125,6 +117,9 @@ class Coa:
         3) crea e restituisce un DataFrame di pandas a partire dal dizionario ottenuto
         """
     def processa(self):
+        for p in an.prodotti:
+            if self.prodotto == p.nome:
+                self.istanza_prodotto = p
         coa_pdf = pymupdf.open(self.file)
         risultati = coa_pdf[0].search_for('Batch No.')
         cerca_batch = risultati[0]
@@ -188,7 +183,7 @@ class Coa:
             worksheet["C5"] = self.batch.replace('  / ', ' / ') # elimino uno spazio di troppo
             worksheet["C7"] = self.data
             worksheet["C8"] = self.filtro
-            self.df_analisi['VALORE'].to_excel(writer,sheet_name=self.filtrato,startrow=self.riga,startcol=2,header=False,index=False)
+            self.df_analisi['VALORE'].to_excel(writer,sheet_name=self.filtrato,startrow=self.istanza_prodotto.riga,startcol=2,header=False,index=False)
 
     def __str__(self):
         return (
@@ -200,15 +195,6 @@ class Coa:
     
     def __repr__(self):
         return f"Coa({self.delivery})"
-
-# DEFINISCO LA FUNZIONE DI CREAZIONE DELL'ISTANZA DI CLASSE, DA CHIAMARE IMPORTANDO QUESTO SCRIPT COME MODULO
-def creazione(delivery:str, data:datetime, filtro:int):
-    # Creo l'istanza di classe e faccio i controlli sul prodotto (che sia presente nell'anagrafica)
-    certificato = Coa(delivery)
-    certificato.check_prodotto()
-    certificato.data = data
-    certificato.filtro = filtro
-    return certificato
 
 # DEFINISCO LA FUNZIONE DI INPUT, DA CHIAMARE QUANDO QUESTO SCRIPT VIENE ESEGUITO DIRETTAMENTE
 def inserisci():
@@ -242,7 +228,7 @@ if __name__ == "__main__":
     tasks = inserisci()
     print(tasks)
     for t in range(0, len(tasks)):
-        istanza = creazione(tasks[t]['delivery'], tasks[t]['data'], tasks[t]['filtro'])
+        istanza = Coa(tasks[t]['delivery'], tasks[t]['data'], tasks[t]['filtro'])
         istanza.processa()
     recappone = Coa.recappone()
     lista_istanze = Coa.lista_istanze
