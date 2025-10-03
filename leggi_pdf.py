@@ -72,6 +72,7 @@ class Coa:
             i.batch_compresso = i.batch.replace('  / ', '')[6:]
             for j in range(0, 9):
                 aggiunta_bollettone['Prodotto '].append(i.filtrato)
+                breakpoint()
                 aggiunta_bollettone['Data'].append(datetime.strftime(i.data, '%d-%b'))
                 aggiunta_bollettone['Batch'].append(i.batchcorto)
                 aggiunta_bollettone['Filtro'].append(f"TK{i.filtro}2")
@@ -106,9 +107,6 @@ class Coa:
         self.nomefile = Path(self.file).name
         self.prodotto = self.nomefile[16:22]
         self.filtrato = self.prodotto.replace('C', 'F')
-        # inizializzo alcune variabili che verranno poi definite nella funzione di creazione creazione()
-        self.data = ''
-        self.filtro = ''
 
     """ La seguente funzione processa il certificato pdf con i seguenti passaggi:
         1) apre il certificato pdf trovato e trova le analisi previste per quel prodotto con i rispettivi valori

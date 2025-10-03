@@ -12,6 +12,7 @@ leggi = pd.read_excel(file, usecols=(0, 1, 5), skiprows=(0,1), sheet_name='PROGR
 indice = leggi.loc[leggi['Delivery'] == 'Cliente'].index[0]
 # Prendo la data:
 data = leggi.iloc[indice-2, 1]
+breakpoint()
 # Taglio le ultime tre righe per pulire il DataFrame
 scarichi = leggi.iloc[:indice-3, :].reset_index(drop=True)
 # Riformatto la colonna del prodotto 'Infineum XXXXX' -> 'XXXXX' in modo da cercarlo nella lista prodotti in anagrafica:
