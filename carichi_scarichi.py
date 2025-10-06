@@ -31,7 +31,7 @@ for i in range(numero_scarichi):
     filtro = int(tank[2])
     istanza = lp.Coa(delivery, data, filtro) # creo l'istanza della classe Coa
     istanza.processa()
-print("Certificati letti correttamente, creo i fogli di marcia.")
+print("Certificati letti correttamente.")
 
 """ Chiamo il metodo di classe recappone() per individuare eventuali blenderoni e popolare il bollettone M30B,
     quindi creo il foglio di marcia per ogni scarico (iterando nella lista delle istanze) """
