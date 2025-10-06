@@ -86,9 +86,9 @@ class Coa:
             nuova_riga_log = pd.DataFrame([{'batch_id': hash_aggiunta, 'descrizione': f'Automatizzato in data {datetime.now()}'}])
             df_log = pd.concat([df_log, nuova_riga_log], ignore_index=True)
             df_log.to_csv(percorso_log, index=False, sep=";")
-            print("Bollettone aggiornato correttamente, puoi chiudere la finestra.")
+            print("Bollettone aggiornato correttamente.")
         else:
-            print("Dati già precedentemente inseriti nel bollettone, puoi chiudere la finestra.")
+            print("Dati già precedentemente inseriti nel bollettone, nessuna modifica.")
         return cls.df_recap
 
     """ Nel metodo costruttore sono inserite anche le istruzioni per cercare il file pdf corrispondente e prelevare il prodotto e il nome del file, assegnandoli all'istanza """
@@ -163,7 +163,6 @@ class Coa:
         Coa.dict_recap['Batch'].append(self.batch)
         Coa.dict_recap['Batchcorto'].append(self.batchcorto)
         Coa.dict_recap['Filtro'].append(self.filtro)
-        print("Certificati letti correttamente, creo i fogli di marcia.")
         return self.df_analisi
     
     """ La seguente funzione lavora sul foglio di marcia con i seguenti passaggi:
