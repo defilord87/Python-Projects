@@ -184,7 +184,6 @@ class Coa:
             worksheet["C7"] = self.data
             worksheet["C8"] = self.filtro
             self.df_analisi['VALORE'].to_excel(writer,sheet_name=self.filtrato,startrow=self.istanza_prodotto.riga,startcol=2,header=False,index=False)
-        print("Fogli di marcia creati correttamente, riempio il bollettone.")
 
     def __str__(self):
         return (
