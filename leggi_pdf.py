@@ -102,7 +102,7 @@ class Coa:
             if trova.is_file() and self.delivery in trova.name and trova.name.endswith('.pdf'):
                 result.append(trova.path)
         if not result:
-            raise CoaNotOk(f"La delivery {self.delivery} non esiste!")
+            raise CoaNotOk(f"Non trovo la delivery {self.delivery}! Forse non è scritta correttamente oppure non è ancora uscito il CoA.")
         elif len(result) != 1:
             raise CoaNotOk(f"La delivery {self.delivery} non è univoca!\nHo trovato {len(result)} risultati, ma dovrei trovare un solo CoA. Verifica di avere inserito il numero di delivery per intero.")
         self.file = result[0]
