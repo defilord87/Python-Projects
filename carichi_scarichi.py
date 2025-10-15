@@ -33,8 +33,9 @@ for i in range(numero_scarichi):
     if nota:
         pattern = r'\b(\d{1,2})/(\d{1,2})\b'
         match = re.search(pattern, nota)
-        giorno, mese = map(int, match.groups())
-        data = data.replace(day=giorno, month=mese)
+        if match:    
+            giorno, mese = map(int, match.groups())
+            data = data.replace(day=giorno, month=mese)
     filtro = int(tank[2])
     istanza = lp.Coa(delivery, data, filtro) # creo l'istanza della classe Coa
     istanza.processa()
