@@ -1,13 +1,14 @@
 import pandas as pd
 import interfaccia # importo le funzioni per l'interfaccia grafica (da togliere un giorno?)
 import leggi_pdf as lp # importo la funzione per processare i CoA e fare tutto il giro
+import re # regular expression per prendere la data dalle note, es. "1° filtrazione del 17/10"
 
 """ Avvio l'interfaccia per aprire il programma carichi/scarichi e ritorno il path del file """
 file = interfaccia.finestra()
 
 """ Importo il contenuto del file Excel in un DataFrame, saltando le prime due righe di intestazione e
     prendendo solo le colonne di prodotto, delivery e serbatoio (-> filtro) """
-leggi = pd.read_excel(file, usecols=(0, 1, 5), skiprows=(0,1), sheet_name='PROGRAMMA UNICO')
+leggi = pd.read_excel(file, usecols=(0, 1, 4, 5), skiprows=(0,1), sheet_name='PROGRAMMA UNICO')
 # Prendo l'indice della riga dove iniziano i carichi per tagliarli via e tenere solo gli scarichi:
 indice = leggi.loc[leggi['Delivery'] == 'Cliente'].index[0]
 # Prendo la data:
@@ -28,6 +29,12 @@ numero_scarichi = len(dict_scarichi['Delivery'])
 for i in range(numero_scarichi):
     delivery = str(dict_scarichi['Delivery'][i])
     tank = dict_scarichi['Serbatoio'][i]
+    nota = dict_scarichi['Note'][i]
+    if nota:
+        pattern = r'\b(\d{1,2})/(\d{1,2})\b'
+        match = re.search(pattern, nota)
+        giorno, mese = map(int, match.groups())
+        data = data.replace(day=giorno, month=mese)
     filtro = int(tank[2])
     istanza = lp.Coa(delivery, data, filtro) # creo l'istanza della classe Coa
     istanza.processa()
