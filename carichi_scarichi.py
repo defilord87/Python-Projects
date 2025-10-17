@@ -19,9 +19,12 @@ scarichi = leggi.iloc[:indice-3, :].reset_index(drop=True)
 scarichi["Material Description"] = scarichi["Material Description"].str.replace("Infineum ", "", regex=False)
 # Filtro solo i prodotti in anagrafica in modo da scartare l'olio SN150, i prodotti dalla Francia ecc.:
 scarichi = scarichi[scarichi["Material Description"].isin(lp.an.lista_prodotti)]
+# Metto il df in ordine di delivery crescente per gestire bene i blenderoni
+scarichi = scarichi.sort_values(by="Delivery")
 # Esporto il DataFrame in un dizionario per prelevare delivery e filtro da mandare al costruttore dell'istanza CoA del prodotto:
 dict_scarichi = scarichi.to_dict()
 print("Programma letto correttamente, inizio a prelevare i dati.")
+breakpoint()
 
 """ Prendo il numero degli scarichi e itero su tutti questi prendendo ogni volta delivery e filtro e inizializzando l'istanza.
     Dopo averla inizializzata chiamo il metodo processa() dell'istanza per importare le analisi dal CoA pdf corrispondente """
