@@ -20,7 +20,7 @@ scarichi["Material Description"] = scarichi["Material Description"].str.replace(
 # Filtro solo i prodotti in anagrafica in modo da scartare l'olio SN150, i prodotti dalla Francia ecc.:
 scarichi = scarichi[scarichi["Material Description"].isin(lp.an.lista_prodotti)]
 # Metto il df in ordine di delivery crescente per gestire bene i blenderoni
-scarichi = scarichi.sort_values(by="Delivery")
+scarichi = scarichi.sort_values(by="Delivery").reset_index(drop=True)
 # Esporto il DataFrame in un dizionario per prelevare delivery e filtro da mandare al costruttore dell'istanza CoA del prodotto:
 dict_scarichi = scarichi.to_dict()
 print("Programma letto correttamente, inizio a prelevare i dati.")
