@@ -1,4 +1,4 @@
-"""
+\   """
 MODULO CONTENENTE L'ANAGRAFICA DELLE ANALISI E DEI PRODOTTI
 DA IMPORTARE COME MODULO NEGLI ALTRI SCRIPT
 
@@ -56,7 +56,7 @@ class Prodotto:
             f"Analisi: {self.lista_analisi}\n"
         )
 
-lista_prodotti = ['D3336C', 'P6072C', 'P6097C', 'P6571C', 'P6052C', 'P6660C', 'P5245C', 'D3502C']
+lista_prodotti = ['D3336C', 'P6072C', 'P6097C', 'P6571C', 'P6052C', 'P6660C', 'P5245C', 'D3502C', 'D3474C']
 
 prodotti = [
     Prodotto('D3336C', 'salicilato', riga=71, analisi=(0, 6, 7, 3, 10, 13, 11, 17, 12, 1, 2, 9)),
@@ -67,4 +67,5 @@ prodotti = [
     Prodotto('P6660C', 'salicilato', riga=73, analisi=(0, 6, 7, 3, 13, 17, 12, 10, 16, 14, 1, 9)),
     Prodotto('P5245C', 'solfonato', riga=69, analisi=(0, 19, 7, 3, 2, 13, 11, 17, 12, 9)),
     Prodotto('D3502C', 'solfonato', riga=72, analisi=(0, 6, 7, 3, 16, 13, 10, 11, 17, 12, 1, 14, 20, 9)),
+    Prodotto('D3474C', 'solfonato', riga=72, analisi=(0, 6, 7, 3, 16, 13, 10, 11, 17, 12, 1, 9)),
 ]
