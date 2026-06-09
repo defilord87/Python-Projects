@@ -56,7 +56,7 @@ class Prodotto:
             f"Analisi: {self.lista_analisi}\n"
         )
 
-lista_prodotti = ['D3336C', 'P6072C', 'P6097C', 'P6571C', 'P6052C', 'P6660C', 'P5245C', 'D3502C', 'D3474C']
+lista_prodotti = ['D3336C', 'P6072C', 'P6097C', 'P6059C', 'P6571C', 'P6052C', 'P6660C', 'P5245C', 'D3502C', 'D3474C']
 
 prodotti = [
     Prodotto('D3336C', 'salicilato', riga=71, analisi=(0, 6, 7, 3, 10, 13, 11, 17, 12, 1, 2, 9)),
