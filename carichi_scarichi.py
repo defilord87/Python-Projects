@@ -14,7 +14,7 @@ indice = leggi.loc[leggi['Delivery'] == 'Cliente'].index[0]
 # Prendo la data:
 data = leggi.iloc[indice-2, 1]
 # Taglio le ultime tre righe per pulire il DataFrame
-scarichi = leggi.iloc[:indice-3, :].reset_index(drop=True)
+scarichi = leggi.iloc[:indice-3, :]
 # Riformatto la colonna del prodotto 'Infineum XXXXX' -> 'XXXXX' in modo da cercarlo nella lista prodotti in anagrafica:
 scarichi["Material Description"] = scarichi["Material Description"].str.replace("Infineum ", "", regex=False)
 # Filtro solo i prodotti in anagrafica in modo da scartare l'olio SN150, i prodotti dalla Francia ecc.:
@@ -39,6 +39,7 @@ for i in range(numero_scarichi):
             giorno, mese = map(int, match.groups())
             data = data.replace(day=giorno, month=mese)
     filtro = int(tank[2])
+    breakpoint()
     istanza = lp.Coa(delivery, data, filtro) # creo l'istanza della classe Coa
     istanza.processa()
 print("Certificati letti correttamente.")
