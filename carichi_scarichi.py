@@ -39,7 +39,6 @@ for i in range(numero_scarichi):
             giorno, mese = map(int, match.groups())
             data = data.replace(day=giorno, month=mese)
     filtro = int(tank[2])
-    breakpoint()
     istanza = lp.Coa(delivery, data, filtro) # creo l'istanza della classe Coa
     istanza.processa()
 print("Certificati letti correttamente.")
