@@ -18,7 +18,7 @@ import hashlib                  # per vedere se nel bollettone sono già stati i
 
 # DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
 # PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- PER QUANDO TESTO DA CASA
-PERCORSO_COA = r"\\vm-cegeka\COA"
+PERCORSO_COA = r"\\vm-cegeka\ScambioDati\CoA\pdf"
 # PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- PER TESTARE IN LOCALE, ANCHE A LAVORO
 PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 
