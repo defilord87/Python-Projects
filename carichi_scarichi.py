@@ -15,8 +15,8 @@ leggi = pd.read_excel(file, usecols=(0, 1, 5, 6), skiprows=(0,1), sheet_name='PR
 indice = leggi.loc[leggi['Delivery Number'] == 'Cliente'].index[0]
 # Prendo la data:
 data = leggi.iloc[indice-1, 1]
-locale.setlocale(locale.LC_TIME, "Italian_Italy")
-data = datetime.strptime(data, "%A %d %B %Y")
+# locale.setlocale(locale.LC_TIME, "Italian_Italy")
+# data = datetime.strptime(data, "%A %d %B %Y")
 # Taglio le ultime tre righe per pulire il DataFrame
 scarichi = leggi.iloc[:indice-2, :]
 # Riformatto la colonna del prodotto 'Infineum XXXXX' -> 'XXXXX' in modo da cercarlo nella lista prodotti in anagrafica:
