@@ -18,7 +18,7 @@ import hashlib                  # per vedere se nel bollettone sono già stati i
 
 # DEFINIZIONE VARIABILI GLOBALI E IMPOSTAZIONE TIMESET LOCALE
 # PERCORSO_COA = r"C:\Users\s.barondi\Documents\Python\COA" # --- PER QUANDO TESTO DA CASA
-PERCORSO_COA = r"\\vm-cegeka\ScambioDati\CoA\pdf"
+PERCORSO_COA = r"\\vm-cegeka\COA"
 # PERCORSO_MAIN = fr"C:\Users\{os.getlogin()}\Documents\Python" # --- PER TESTARE IN LOCALE, ANCHE A LAVORO
 PERCORSO_MAIN = r"\\iglomfs\Produzione\FILTRAZIONE\COMPUTER LAB"
 
@@ -69,7 +69,6 @@ class Coa:
         for i in cls.lista_istanze:
             i.batch = cls.df_recap['Batch'][cls.lista_istanze.index(i)]
             i.batchcorto = cls.df_recap['Batchcorto'][cls.lista_istanze.index(i)]
-            i.batch_compresso = i.batch.replace('  / ', '')[6:]
             for j in range(0, 9):
                 aggiunta_bollettone['Prodotto '].append(i.filtrato)
                 aggiunta_bollettone['Data'].append(datetime.strftime(i.data, '%d-%b'))
@@ -125,9 +124,8 @@ class Coa:
         cerca_batch = risultati[0]
         rettangolo_batch = pymupdf.Rect(x0=cerca_batch.x0+11.65, y0=cerca_batch.y0+11.45, x1=cerca_batch.x1+90, y1=cerca_batch.y1+12.45)
         self.batch = coa_pdf[0].get_textbox(rettangolo_batch).strip()
-        # Creo le altre versioni del batch (batchcorto: senza tank, batch_compresso: intero senza interpunzioni)
-        self.batchcorto = self.batch.split('  / ')[0]
-        self.batch_compresso = self.batch.replace('  / ', '')[6:]
+        # Creo le altre versioni del batch (batchcorto: senza tank)
+        self.batchcorto = self.batch.split(' / ')[0]
         # inizializzo il dizionario che poi andrò a riempire con analisi e relativi valori
         self.dict_analisi = {'ANALISI': [], 'VALORE': []}
         # cerco i valori delle analisi
@@ -172,10 +170,10 @@ class Coa:
         4) lo replica più volte nel caso si tratti di un blenderone """
     def crea_fdm(self):
         percorso_fdm = PERCORSO_MAIN + r"\Fogli di marcia"
-        for trova in os.scandir(fr"{percorso_fdm}\Vergini 2023"):
+        for trova in os.scandir(fr"{percorso_fdm}\Vergini SAP4"):
             if trova.is_file() and self.filtrato in trova.name and trova.name.endswith('.xlsx'):
                 result = trova.path
-        fdm_finale = fr"{percorso_fdm}\{self.filtrato} 1-{self.batch_compresso}.xlsx"
+        fdm_finale = fr"{percorso_fdm}\{self.filtrato} {self.batchcorto}.xlsx"
         shutil.copy(result, fdm_finale) # devo ancora definire il batch
         self.df_analisi.loc[len(self.df_analisi)] = ['AUTO', 'AUTO'] # per far capire che il CoA è stato generato in automatico
         with pd.ExcelWriter(fdm_finale,mode='a',if_sheet_exists='overlay',engine='openpyxl') as writer:
